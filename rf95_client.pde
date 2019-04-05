@@ -12,8 +12,9 @@ RH_RF95 rf95;
 int led = 8;
 int state = 0;
 int rssimax;
+int SoLanNhanRssiTinHieuThap = 0;
 uint8_t id[] = "004";
-uint8_t idnodecon[100][4];
+uint8_t idnodecon[30][4];
 uint8_t idnodecha[3];
 int dem = 0;
 int solangui = 0;
@@ -29,7 +30,7 @@ void setup()
 	if (!rf95.init())
 		Serial.println("init failed");
 	// khoi tao ban dau id
-	for (int i = 0; i <= 99; i++)
+	for (int i = 0; i <= 29; i++)
 	{
 		for (int j = 0; j <= 3; j++)
 		{
@@ -68,7 +69,7 @@ void ketnoi()
 	}
 	else if (millis() - time1 == 4000)
 	{
-		Serial.println("gui du lieu ket noi");
+		Serial.println("gui tin hieu yeu cau ket noi voi node cha");
 		// Send a message to rf95_server
 		uint8_t data[30] = "kn0"; //kn yeu cau ket noi
 		data[3] = id[0];
@@ -90,8 +91,12 @@ void ketnoi()
 			Serial.print("tin hieu nhan duoc: ");
 			Serial.println((char*)buf);
 			uint8_t *a = (uint8_t*)buf;
+			Serial.print("RSSI a1: ");
+			int rssi = rf95.lastRssi();
+			Serial.println(rssi);
 			if (a[0] == 'k'&&a[1] == 't'&&a[2] == '1'&&a[6] == id[0] && a[7] == id[1] && a[8] == id[2]) // ket noi tin hieu muc cao
 			{
+				Serial.println("thuc hien ket noi muc 1");
 				idnodecha[0] = a[3];
 				idnodecha[1] = a[4];
 				idnodecha[2] = a[5];
@@ -102,12 +107,15 @@ void ketnoi()
 				data[6] = id[0];
 				data[7] = id[1];
 				data[8] = id[2];
+				Serial.print("dia chi id cha: ");
+				Serial.println((char*)idnodecha);
 				rf95.send(data, sizeof(data));
 				rf95.waitPacketSent();
 				state = 1;
 			}
 			else if (a[0] == 'k'&&a[1] == 't'&&a[2] == '2'&&a[6] == id[0] && a[7] == id[1] && a[8] == id[2])  //ket noi tin hieu muc thap
 			{
+				Serial.println("thuc hien ket noi muc 2");
 				idnodecha[0] = a[3];
 				idnodecha[1] = a[4];
 				idnodecha[2] = a[5];
@@ -124,19 +132,25 @@ void ketnoi()
 			}
 			else if (a[0] == 'k'&&a[1] == 't'&&a[2] == '3'&&a[6] == id[0] && a[7] == id[1] && a[8] == id[2])  //ket noi tin hieu muc thap
 			{
-				idnodecha[0] = a[3];
-				idnodecha[1] = a[4];
-				idnodecha[2] = a[5];
-				uint8_t data[30] = "tc0"; //tc0  chap nhan ket noi
-				data[3] = a[3];
-				data[4] = a[4];
-				data[5] = a[5];
-				data[6] = id[0];
-				data[7] = id[1];
-				data[8] = id[2];
-				rf95.send(data, sizeof(data));
-				rf95.waitPacketSent();
-				state = 2;
+				Serial.println("thuc hien ket noi muc 3");
+				//SoLanNhanRssiTinHieuThap = SoLanNhanRssiTinHieuThap + 1;
+				//if (rssi >= -25 || SoLanNhanRssiTinHieuThap > 10)
+				//{
+					idnodecha[0] = a[3];
+					idnodecha[1] = a[4];
+					idnodecha[2] = a[5];
+					uint8_t data[30] = "tc0"; //tc0  chap nhan ket noi
+					data[3] = a[3];
+					data[4] = a[4];
+					data[5] = a[5];
+					data[6] = id[0];
+					data[7] = id[1];
+					data[8] = id[2];
+					rf95.send(data, sizeof(data));
+					rf95.waitPacketSent();
+					state = 3;
+					SoLanNhanRssiTinHieuThap = 0;
+				//}
 			}
 			digitalWrite(led, LOW);
 		}
@@ -164,7 +178,7 @@ void ketnoimuc1()
 			Serial.println(rssi);
 			if (a[0] == 'k'&& a[1] == 'n'&& a[2] == '0'&& rssi > -25)
 			{
-				Serial.println("thuc hien ket noi ");
+				Serial.println("node con co the ket noi voi tin hieu muc cao");
 				uint8_t data[30] = "kt1"; //kt1 la cho ket noi voi cac node co tin hieu muc cao
 				data[3] = id[0];
 				data[4] = id[1];
@@ -179,16 +193,16 @@ void ketnoimuc1()
 			}
 			else if (a[0] == 't'&& a[1] == 'c'&& a[2] == '0'&&a[3] == id[0] && a[4] == id[1] && a[5] == id[2])
 			{
-				for (int i = 0; i <= 99; i++)
+				for (int i = 0; i <= 29; i++)
 				{
 					if (idnodecon[i][0] == '0')
 					{
 						idnodecon[i][0] = '1';
-						idnodecon[i][1] = a[3];
-						idnodecon[i][2] = a[4];
-						idnodecon[i][3] = a[5];
+						idnodecon[i][1] = a[6];
+						idnodecon[i][2] = a[7];
+						idnodecon[i][3] = a[8];
 						i = 101;
-						Serial.println("ket noi lan dau");
+						Serial.println("luu id node con");
 					}
 				}
 			}
@@ -214,9 +228,8 @@ void ketnoimuc2()
 	}
 	else if (millis() - time1 == 4000)
 	{
-		Serial.println("gui du lieu ket noi");
-		// Send a message to rf95_server
-		uint8_t data[30] = "kt2"; //kn yeu cau ket noi
+		Serial.println("gui du lieu yeu cau node con ket noi muc 2");
+		uint8_t data[30] = "kt2"; //kt2 la cho ket noi voi cac node co tin hieu muc thap
 		data[3] = id[0];
 		data[4] = id[1];
 		data[5] = id[2];
@@ -234,12 +247,13 @@ void ketnoimuc2()
 			Serial.print("tin hieu gui den: ");
 			Serial.println((char*)buf);
 			uint8_t *a = (uint8_t*)buf;
-			Serial.print("RSSI aa: ");
+			Serial.print("RSSI a2: ");
 			int rssi = rf95.lastRssi();
 			Serial.println(rssi);
 			if (a[0] == 'k'&& a[1] == 'n'&& a[2] == '0'&& rssi > -30)
 			{
-				Serial.println("thuc hien ket noi");
+				Serial.println("thuc hien ket noi muc 2");
+				Serial.println("node con co the ket noi voi tin hieu muc thap");
 				uint8_t data[30] = "kt2"; //kt2 la cho ket noi voi cac node co tin hieu muc thap
 				data[3] = id[0];
 				data[4] = id[1];
@@ -254,21 +268,22 @@ void ketnoimuc2()
 			}
 			else if (a[0] == 't'&& a[1] == 'c'&& a[2] == '0'&&a[3] == id[0] && a[4] == id[1] && a[5] == id[2])
 			{
-				for (int i = 0; i <= 99; i++)
+				for (int i = 0; i <= 29; i++)
 				{
 					if (idnodecon[i][0] == '0')
 					{
 						idnodecon[i][0] = '1';
-						idnodecon[i][1] = a[3];
-						idnodecon[i][2] = a[4];
-						idnodecon[i][3] = a[5];
+						idnodecon[i][1] = a[6];
+						idnodecon[i][2] = a[7];
+						idnodecon[i][3] = a[8];
 						i = 101;
-						Serial.println("ket noi lan dau");
+						Serial.println("luu id node con");
 					}
 				}
 			}
 			else if (a[0] == 'k'&& a[1] == 'g'&& a[2] == '0'&&a[3] == idnodecha[0] && a[4] == idnodecha[1] && a[5] == idnodecha[2])
 			{
+				Serial.println("nhayden day");
 				state = 3;
 			}
 		}
@@ -289,7 +304,7 @@ void nodetrunggian()
 		}
 		else if (millis() - time3 == 4000)
 		{
-			Serial.println("gui du lieu ket noi");
+			Serial.println("gui du lieu yeu cau node con gui du lieu");
 			// Send a message to rf95_server
 			uint8_t data[30] = "kg0"; // kg0 yeu cau node con bat dau gui du lieu len node cha
 			data[3] = id[0];
@@ -308,7 +323,7 @@ void nodetrunggian()
 	}
 	else if (millis() - time4 == 4000)
 	{
-		Serial.println("gui du lieu ket noi");
+		Serial.println("gui du lieu do duoc");
 		int temperature = PT100.readTemperature(HighTemperaturePin);  //Get temperature
 		Serial.print("temperature1:  ");
 		Serial.print(temperature);
@@ -324,14 +339,15 @@ void nodetrunggian()
 		data[9] = id[0];          //data[9]->data[11] dia chi node gui du lieu ban dau
 		data[10] = id[1];
 		data[11] = id[2];
-		data[12] = (uint8_t) temperature;
+		data[12] = (uint8_t)temperature;
 		Serial.print("data: ");
 		Serial.println(sizeof(data));
-//		data[13] = '4';
 		rf95.send(data, sizeof(data));
 		rf95.waitPacketSent();
 		time4 = millis();
 		solangui = solangui + 1;
+		Serial.print("so lan gui: ");
+		Serial.println(solangui);
 	}
 
 
@@ -351,7 +367,7 @@ void nodetrunggian()
 			uint8_t *a = (uint8_t*)buf;
 			if (a[0] == 'k'&& a[1] == 'g'&& a[2] == '1')
 			{
-				for (int i = 0; i <= 99; i++)
+				for (int i = 0; i <= 29; i++)
 				{
 					if (idnodecon[i][0] == '1')
 					{
@@ -372,33 +388,42 @@ void nodetrunggian()
 							rf95.send(data, sizeof(data));
 							rf95.waitPacketSent();
 							solangui = solangui + 1;
+							Serial.print("so lan gui: ");
+							Serial.println(solangui);
 							i = 101;
 						}
 					}
 				}
 			}
-			else if (a[0] == 'd'&& a[1] == 'n'&& a[2] == '1'&&a[3] == idnodecha[0] && a[4] == idnodecha[1] && a[5] == idnodecha[2] && a[6] == id[0] && a[7] == id[1] && a[8] == id[2])
+			if (a[0] == 'd'&& a[1] == 'n'&& a[2] == '1'&&a[3] == idnodecha[0] && a[4] == idnodecha[1] && a[5] == idnodecha[2] && a[6] == id[0] && a[7] == id[1] && a[8] == id[2])
 			{
 				solannhan = solannhan + 1;
+				Serial.print("so lan nhan: ");
+				Serial.println(solannhan);
 			}
-			digitalWrite(led, LOW);
 
-			if (solangui == 10)
-			{
-				if (solangui - solannhan > 8)
-				{
-					solangui = 0;
-					solannhan = 0;
-				}
-				else
-				{
-					state = 0;
-				}
-			}
+
+			digitalWrite(led, LOW);
 		}
 		else
 		{
 			Serial.println("recv failed");
+		}
+	}
+	if (solangui == 10)
+	{
+		if (solangui - solannhan < 3)
+		{
+			solangui = 0;
+			solannhan = -1;
+		}
+		else
+		{
+			state = 0;
+			idnodecha[0] = '0';
+			idnodecha[1] = '0';
+			idnodecha[2] = '0';
+
 		}
 	}
 }
