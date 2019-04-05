@@ -57,9 +57,10 @@ void loop()
 	{
 		nodetrunggian();
 	}
-
-
-
+	else
+	{
+		Serial.println("the end");
+	}
 }
 void ketnoi()
 {
@@ -283,7 +284,7 @@ void ketnoimuc2()
 			}
 			else if (a[0] == 'k'&& a[1] == 'g'&& a[2] == '0'&&a[3] == idnodecha[0] && a[4] == idnodecha[1] && a[5] == idnodecha[2])
 			{
-				Serial.println("nhayden day");
+				Serial.println("nhay den day");
 				state = 3;
 			}
 		}
@@ -369,9 +370,9 @@ void nodetrunggian()
 			{
 				for (int i = 0; i <= 29; i++)
 				{
-					if (idnodecon[i][0] == '1')
+					if (idnodecon[i][0] == '1' && a[3] == id[0] && a[4] == id[1] && a[5] == id[2])
 					{
-						if (a[3] == id[0] && a[4] == id[1] && a[5] == id[2] && a[6] == (idnodecon[i][1]) && a[7] == (idnodecon[i][2]) && a[8] == (idnodecon[i][3]))
+						if (a[6] == (idnodecon[i][1]) && a[7] == (idnodecon[i][2]) && a[8] == (idnodecon[i][3]))
 						{
 							uint8_t data[30] = "kg1"; //kg1 thuc hien gui du lieu len node cha
 							data[3] = idnodecha[0];
@@ -387,6 +388,15 @@ void nodetrunggian()
 							data[13] = a[13];
 							rf95.send(data, sizeof(data));
 							rf95.waitPacketSent();
+							uint8_t data1[30] = "dn1"; //dn1 gui hieu phan roi da nhan cho node con
+							data[3] = id[0];
+							data[4] = id[1];
+							data[5] = id[2];
+							data[6] = a[6];   /// data[6]->data[8] la giu lieu do duoc nhu nhiet do, do am..
+							data[7] = a[7];
+							data[8] = a[8];
+							rf95.send(data1, sizeof(data1));
+							rf95.waitPacketSent();
 							solangui = solangui + 1;
 							Serial.print("so lan gui: ");
 							Serial.println(solangui);
@@ -401,7 +411,51 @@ void nodetrunggian()
 				Serial.print("so lan nhan: ");
 				Serial.println(solannhan);
 			}
+			if (a[0] == 'k'&& a[1] == 'n'&& a[2] == '0')
+			{
+				Serial.println("thuc hien ket noi ");
+				uint8_t data[30] = "kt3"; //kt3 cho ket noi voi cac node 
+				data[3] = id[0];
+				data[4] = id[1];
+				data[5] = id[2];
+				data[6] = a[3];
+				data[7] = a[4];
+				data[8] = a[5];
+				rf95.send(data, sizeof(data));
+				rf95.waitPacketSent();
+				Serial.println("Sent a reply");
+				digitalWrite(led, LOW);
+			}
 
+			if (a[0] == 't'&& a[1] == 'c'&& a[2] == '0'&&a[3] == id[0] && a[4] == id[1] && a[5] == id[2])
+			{
+				for (int i = 0; i <= 99; i++)
+				{
+					if (idnodecon[i][0] == '0')
+					{
+						idnodecon[i][0] = '1';
+						idnodecon[i][1] = a[6];
+						idnodecon[i][2] = a[7];
+						idnodecon[i][3] = a[8];
+						i = 101;
+						Serial.println("luu id node con");
+					}
+				}
+			}
+			else if (a[0] == 'n'&& a[1] == 'g'&& a[2] == '0'&&a[3] == idnodecha[0] && a[4] == idnodecha[1] && a[5] == idnodecha[2]) // ng0 thuc hien ngu cho mang
+			{
+				Serial.println("gui tin hieu ngu cho node con");
+				for (int i = 0; i < 2; i++)
+				{
+					uint8_t data[30] = "ng0"; //kt3 cho ket noi voi cac node 
+					data[3] = id[0];
+					data[4] = id[1];
+					data[5] = id[2];
+					rf95.send(data, sizeof(data));
+					rf95.waitPacketSent();
+				}
+				state = 4;
+			}
 
 			digitalWrite(led, LOW);
 		}
@@ -410,8 +464,10 @@ void nodetrunggian()
 			Serial.println("recv failed");
 		}
 	}
+	
 	if (solangui == 10)
 	{
+
 		if (solangui - solannhan < 3)
 		{
 			solangui = 0;
@@ -423,7 +479,13 @@ void nodetrunggian()
 			idnodecha[0] = '0';
 			idnodecha[1] = '0';
 			idnodecha[2] = '0';
-
+			solangui = 0;
+			solannhan = 0;
 		}
 	}
+}
+
+void ngu()
+{
+
 }
