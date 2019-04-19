@@ -1,6 +1,6 @@
 C:\Users\MINH\ NGUYEN\AppData\Local\Temp\VMBuilds\rf95_client\uno\Debug\VM_DBG\VM_DBG.cpp.o: \
- c:\program\ files\ (x86)\microsoft\ visual\ studio\2017\professional\common7\ide\extensions\mbsqucm2.qs1\Micro\ Platforms\default\debuggers\VM_DBG\VM_DBG.cpp \
- c:\program\ files\ (x86)\microsoft\ visual\ studio\2017\professional\common7\ide\extensions\mbsqucm2.qs1\Micro\ Platforms\default\debuggers\VM_DBG\VM_DBG.h \
+ c:\program\ files\ (x86)\microsoft\ visual\ studio\2017\professional\common7\ide\extensions\pnjvqy5x.ql4\Micro\ Platforms\default\debuggers\VM_DBG\VM_DBG.cpp \
+ c:\program\ files\ (x86)\microsoft\ visual\ studio\2017\professional\common7\ide\extensions\pnjvqy5x.ql4\Micro\ Platforms\default\debuggers\VM_DBG\VM_DBG.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\arduino\avr\cores\arduino/Arduino.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\arduino\avr\cores\arduino/binary.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\arduino\avr\cores\arduino/WCharacter.h \
