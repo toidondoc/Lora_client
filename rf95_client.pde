@@ -112,6 +112,7 @@ void ketnoi()
 			if (a[0] == 'k'&&a[1] == 't'&&a[2] == '1'&&a[6] == id[0] && a[7] == id[1] && a[8] == id[2]) // ket noi tin hieu muc cao
 			{
 				Serial.println("thuc hien ket noi muc 1");
+				delay(500);
 				kt(a);
 				state = 1;
 			}
@@ -434,6 +435,7 @@ void kt(uint8_t a[])
 	data[15] = id[2];
 	rf95.send(data, sizeof(data));
 	rf95.waitPacketSent();
+	Serial.println("Sent kt");
 }
 
 void kn0(uint8_t data[], uint8_t a[])
