@@ -112,7 +112,7 @@ void ketnoi()
 			if (a[0] == 'k'&&a[1] == 't'&&a[2] == '1'&&a[6] == id[0] && a[7] == id[1] && a[8] == id[2]) // ket noi tin hieu muc cao
 			{
 				Serial.println("thuc hien ket noi muc 1");
-				delay(500);
+				delay(400);
 				kt(a);
 				state = 1;
 			}
@@ -277,11 +277,13 @@ void nodetrunggian()
 	{
 		Serial.println("gui du lieu do duoc");
 		int temperature = PT100.readTemperature(HighTemperaturePin);  //Get temperature
+		char nhietdo[5];
+		itoa(temperature, nhietdo, 10);
 		Serial.print("temperature1:  ");
 		Serial.print(temperature);
 		Serial.println("  ^C");
 		// Send a message to rf95_server
-		uint8_t data[14] = "kg1"; //kg1 thuc hien gui du lieu len node cha
+		uint8_t data[15] = "kg1"; //kg1 thuc hien gui du lieu len node cha
 		data[3] = idnodecha[0];   //data[3] -> data[4] dia chi node cha
 		data[4] = idnodecha[1];
 		data[5] = idnodecha[2];
@@ -291,9 +293,12 @@ void nodetrunggian()
 		data[9] = id[0];          //data[9]->data[11] dia chi node gui du lieu ban dau
 		data[10] = id[1];
 		data[11] = id[2];
-		data[12] = (uint8_t)temperature;
+//		data[12] = (uint8_t)(temperature);
+		data[12] = nhietdo[0];
+		data[13] = nhietdo[1];
 		Serial.print("data: ");
 		Serial.println(sizeof(data));
+		Serial.println((char*)data);
 		rf95.send(data, sizeof(data));
 		rf95.waitPacketSent();
 		time4 = millis();
@@ -418,7 +423,7 @@ void kt(uint8_t a[])
 	idgateway = (int)a[9];
 	bac = (int)a[10] + 1;
 	idcha = (int)a[11];
-	idnode = sonodecon;
+	idnode = (int)a[12];
 	uint8_t data[17] = "tc0"; //tc0  chap nhan ket noi
 	data[3] = a[3];
 	data[4] = a[4];
@@ -428,13 +433,14 @@ void kt(uint8_t a[])
 	data[8] = id[2];
 	data[9] = (uint8_t)idgateway;
 	data[10] = (uint8_t)bac;
-	data[11] = (uint8_t)idnodecha;
+	data[11] = (uint8_t)idcha;
 	data[12] = (uint8_t)idnode;
 	data[13] = id[0];
 	data[14] = id[1];
 	data[15] = id[2];
 	rf95.send(data, sizeof(data));
 	rf95.waitPacketSent();
+	Serial.println((char*) (data));
 	Serial.println("Sent kt");
 }
 
