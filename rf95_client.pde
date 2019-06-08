@@ -119,6 +119,7 @@ void ketnoi()
 			else if (a[0] == 'k'&&a[1] == 't'&&a[2] == '2'&&a[6] == id[0] && a[7] == id[1] && a[8] == id[2])  //ket noi tin hieu muc thap
 			{
 				Serial.println("thuc hien ket noi muc 2");
+				delay(400);
 				kt(a);
 				state = 2;
 			}
@@ -127,8 +128,11 @@ void ketnoi()
 				if (rssi > -30 || SoLanNhanRssiTinHieuThap > 10)
 				{
 					Serial.println("thuc hien ket noi muc 3");
+					delay(500);
 					kt(a);
+					delay(500);
 					state = 3;
+					
 				}
 				else {
 					SoLanNhanRssiTinHieuThap = SoLanNhanRssiTinHieuThap + 1;
@@ -160,7 +164,7 @@ void ketnoimuc1()
 			Serial.print("RSSI : ");
 			int rssi = rf95.lastRssi();
 			Serial.println(rssi);
-			if (a[0] == 'k'&& a[1] == 'n'&& a[2] == '0'&& rssi > -30)
+			if (a[0] == 'k'&& a[1] == 'n'&& a[2] == '0'&& rssi > -52)
 			{
 				Serial.println("node con co the ket noi voi tin hieu muc cao");
 				uint8_t data[30] = "kt1"; //kt1 la cho ket noi voi cac node co tin hieu muc cao
@@ -190,11 +194,11 @@ void ketnoimuc1()
 
 void ketnoimuc2()
 {
-	if (millis() - time1 > 4000)
+	if (millis() - time1 > 15000)
 	{
 		time1 = millis();
 	}
-	else if (millis() - time1 == 4000)
+	else if (millis() - time1 == 15000)
 	{
 		Serial.println("gui du lieu yeu cau node con ket noi muc 2");
 		uint8_t data[7] = "kt2"; //kt2 la cho ket noi voi cac node co tin hieu muc thap
@@ -218,7 +222,7 @@ void ketnoimuc2()
 			Serial.print("RSSI: ");
 			int rssi = rf95.lastRssi();
 			Serial.println(rssi);
-			if (a[0] == 'k'&& a[1] == 'n'&& a[2] == '0'&& rssi < -30)
+			if (a[0] == 'k'&& a[1] == 'n'&& a[2] == '0'&& rssi < -52)
 			{
 				Serial.println("thuc hien ket noi muc 2");
 				Serial.println("node con co the ket noi voi tin hieu muc thap");
@@ -269,11 +273,11 @@ void nodetrunggian()
 		}
 	}
 	///chuong trinh gui du lieu do duoc cua node
-	if (millis() - time4 > 10000)
+	if (millis() - time4 > 15000)
 	{
 		time4 = millis();
 	}
-	else if (millis() - time4 == 10000)
+	else if (millis() - time4 == 15000)
 	{
 		Serial.println("gui du lieu do duoc");
 		int temperature = PT100.readTemperature(HighTemperaturePin);  //Get temperature
@@ -293,9 +297,11 @@ void nodetrunggian()
 		data[9] = id[0];          //data[9]->data[11] dia chi node gui du lieu ban dau
 		data[10] = id[1];
 		data[11] = id[2];
-//		data[12] = (uint8_t)(temperature);
+		//		data[12] = (uint8_t)(temperature);
 		data[12] = nhietdo[0];
 		data[13] = nhietdo[1];
+		//data[12] = '2';
+		//data[13] = '0';
 		Serial.print("data: ");
 		Serial.println(sizeof(data));
 		Serial.println((char*)data);
@@ -332,7 +338,7 @@ void nodetrunggian()
 					{
 						if (a[3] == id[0] && a[4] == id[1] && a[5] == id[2] && a[6] == (idnodecon[i][1]) && a[7] == (idnodecon[i][2]) && a[8] == (idnodecon[i][3]))
 						{
-							uint8_t data[14] = "kg1"; //kg1 thuc hien gui du lieu len node cha
+							uint8_t data[15] = "kg1"; //kg1 thuc hien gui du lieu len node cha
 							data[3] = idnodecha[0];
 							data[4] = idnodecha[1];
 							data[5] = idnodecha[2];
@@ -343,6 +349,10 @@ void nodetrunggian()
 							data[10] = a[10];
 							data[11] = a[11];
 							data[12] = a[12];
+							data[13] = a[13];
+							Serial.print("gui du lieu len node cha: ");
+							Serial.println((char*)data);
+							delay(700);
 							rf95.send(data, sizeof(data));
 							rf95.waitPacketSent();
 							solangui = solangui + 1;
@@ -355,6 +365,7 @@ void nodetrunggian()
 							data1[6] = a[6];
 							data1[7] = a[7];
 							data1[8] = a[8];
+							delay(700);
 							rf95.send(data1, sizeof(data1));
 							rf95.waitPacketSent();
 							i = 101;
@@ -384,6 +395,15 @@ void nodetrunggian()
 				solannhan = solannhan + 1;
 				Serial.print("so lan nhan: ");
 				Serial.println(solannhan);
+			}
+			else if (a[0] == 'n'&& a[1] == 'g'&& a[2] == 'u'&&a[3] == idnodecha[0] && a[4] == idnodecha[1] && a[5] == idnodecha[2])
+			{
+				Serial.println("thuc hien ngu");
+				delay(10000);
+				solangui = 0;
+				solannhan = 0;
+				Serial.println("thuc day");
+				nodetrunggian();
 			}
 
 
@@ -440,7 +460,7 @@ void kt(uint8_t a[])
 	data[15] = id[2];
 	rf95.send(data, sizeof(data));
 	rf95.waitPacketSent();
-	Serial.println((char*) (data));
+	Serial.println((char*)(data));
 	Serial.println("Sent kt");
 }
 
@@ -467,6 +487,7 @@ void kn0(uint8_t data[], uint8_t a[])
 
 void tc0(uint8_t a[])
 {
+	
 	for (int i = 0; i <= 29; i++)
 	{
 		if (idnodecon[i][0] == '0')
@@ -484,12 +505,21 @@ void tc0(uint8_t a[])
 			data[6] = id[0];          //data[6]->data[8] dia chia node con
 			data[7] = id[1];
 			data[8] = id[2];
-			for (int i = 9; i <= 15; i++)
-			{
-				data[i] = a[i];
-			}
+			//for (int i = 9; i <= 15; i++)
+			//{
+			//	data[i] = a[i];
+			//}
+			data[9] = a[6];
+			data[10] = a[7];
+			data[11] = a[8];
+			data[12] = id[0];
+			data[13] = id[1];
+			data[14] = id[2];
+			delay(650);
 			rf95.send(data, sizeof(data));
 			rf95.waitPacketSent();
+			Serial.print("du lieu da gui: ");
+			Serial.println((char*)(data));
 			i = 101;
 		}
 	}
@@ -511,6 +541,7 @@ void tc1(uint8_t a[])
 	{
 		data[i] = a[i];
 	}
+	delay(400);
 	rf95.send(data, sizeof(data));
 	rf95.waitPacketSent();
 }
